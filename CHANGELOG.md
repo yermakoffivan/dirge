@@ -6,6 +6,23 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.25.5] - 2026-09-10
+
+### Fixed
+- `docker ps` rows that don't match the default layout are no longer
+  mis-parsed by the docker ps compressor. `docker-compress-ps` assumed a row
+  with three double-space-separated columns implied a fourth, so a custom
+  `--format` template — e.g. `{{.Names}} | {{.Status}} | {{.Image}}`, which
+  pads its cells and therefore splits into exactly three — raised "expected
+  integer key for array in range [0, 3), got 3" out of the on-tool-end hook
+  on every call. The compressor now only reads positional columns when the
+  row matches the default seven-column layout (CONTAINER ID IMAGE COMMAND
+  CREATED STATUS PORTS NAMES); any other row is kept verbatim, since a custom
+  template has no fixed column positions. Two silent-corruption paths go away
+  with it: the old fallback dropped single-column rows entirely, collapsing
+  e.g. `--format "{{.Names}}"` to "no containers" and losing the container
+  name without a trace. (#847)
+
 ## [0.25.4] - 2026-09-02
 
 ### Fixed
